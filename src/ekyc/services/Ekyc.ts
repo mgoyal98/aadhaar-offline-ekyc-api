@@ -25,14 +25,13 @@ export class EkycService {
         },
       )
       .toPromise();
-
     const captchaImage = Buffer.from(captcha.data, 'binary').toString('base64');
     const cookies = captcha.headers['set-cookie'].map((cookie: string) => {
       return cookie.split(';')[0];
     });
 
     const captchaResponse = {
-      transactionId: uuid().toString().split('-').join(''),
+      transactionId: uuid().toString().replaceAll('-', ''),
       captcha: captchaImage,
     };
 
