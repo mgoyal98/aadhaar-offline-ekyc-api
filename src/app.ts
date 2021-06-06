@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventModule } from '@squareboat/nest-events';
-import { UserModule } from './user';
+import { UserModule } from './ekyc';
 import { DbModule } from './_db';
 import config from '@config/index';
 import { CoreModule } from '@libs/core';

@@ -1,24 +1,24 @@
 {
-  "name": "nestjs-boilerplate",
+  "name": "aadhaar-offline-ekyc-api",
   "version": "1.0.0",
-  "description": "A production ready NestJS boilerplate with batteries included. No Kidding!",
-  "author": "Vinayak Sarawagi <vinayaksarawagi25@gmail.com>",
+  "description": "Api wrapper for Aadhaar Paperless Offline EKYC system",
+  "author": "Madhur Goyal <madhur.goyal2@gmail.com>",
   "private": false,
   "license": "MIT",
   "keywords": [
-    "nestjs-boilerplate",
-    "nestjs-objection",
-    "nestjs-starter-template",
-    "nestjs-template"
+    "aadhaar-api",
+    "ekyc-api",
+    "aadhaar-verification-api",
+    "aadhaar-offline-eky-api"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/squareboat/nestjs-boilerplate.git"
+    "url": "https://github.com/mgoyal98/aadhaar-offline-ekyc-api.git"
   },
   "bugs": {
-    "url": "https://github.com/squareboat/nestjs-boilerplate/issues"
+    "url": "https://github.com/mgoyal98/aadhaar-offline-ekyc-api/issues"
   },
-  "homepage": "https://github.com/squareboat/nestjs-boilerplate",
+  "homepage": "https://github.com/mgoyal98/aadhaar-offline-ekyc-api/",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
@@ -45,6 +45,7 @@
     "@nestjs/common": "^7.6.12",
     "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.6.12",
+    "@nestjs/mongoose": "^7.2.4",
     "@nestjs/platform-express": "^7.6.12",
     "@squareboat/nest-console": "0.0.4",
     "@squareboat/nest-events": "0.0.5",
@@ -55,6 +56,7 @@
     "helmet": "^4.4.1",
     "knex": "^0.21.17",
     "moment": "^2.29.1",
+    "mongoose": "^5.12.13",
     "mysql2": "^2.2.5",
     "objection": "^2.2.14",
     "query-string": "^6.14.0",
