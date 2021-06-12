@@ -1,6 +1,6 @@
 import { Transformer } from '@libs/core';
 
-export class EkycCaptchaTransformer extends Transformer {
+export class EkycOtpTransformer extends Transformer {
   availableIncludes = [];
   defaultIncludes = [];
 
