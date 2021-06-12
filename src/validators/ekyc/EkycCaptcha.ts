@@ -6,6 +6,6 @@ export class EkycCaptchaValidator {
   transactionId: string;
 
   @IsString({ message: 'Invalid Captcha' })
-  @LengthEqualTo(5, { message: 'Invalid Captcha' })
+  @LengthEqualTo(5, { message: 'Captcha should be of 5 digits' })
   captcha: string;
 }
