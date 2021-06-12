@@ -3,6 +3,7 @@ import { EkycController } from './controllers';
 import { EkycService } from './services';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Ekyc, EkycSchema } from './schemas';
+import { CryptoService } from '@app/helper-services';
 
 @Module({
   imports: [
@@ -10,6 +11,6 @@ import { Ekyc, EkycSchema } from './schemas';
     MongooseModule.forFeature([{ name: Ekyc.name, schema: EkycSchema }]),
   ],
   controllers: [EkycController],
-  providers: [EkycService],
+  providers: [EkycService, CryptoService],
 })
 export class UserModule {}

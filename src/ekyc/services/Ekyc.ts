@@ -17,12 +17,14 @@ import * as cheerio from 'cheerio';
 import * as unzipper from 'unzipper';
 import * as xmlToJson from 'xml-js';
 import * as fs from 'fs/promises';
+import { CryptoService } from '@app/helper-services';
 @Injectable()
 export class EkycService {
   constructor(
     private http: HttpService,
     private config: ConfigService,
     private validator: BaseValidator,
+    private crypto: CryptoService,
     @InjectModel(Ekyc.name) private ekyc: Model<EkycDocument>,
   ) {}
 
@@ -67,9 +69,9 @@ export class EkycService {
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.ekyc.create({
-      aadhaarNumber: inputs.aadhaarNumber,
+      aadhaarNumber: await this.crypto.encrypt(inputs.aadhaarNumber),
       transactionId: transactionId,
-      cookies: cookies,
+      cookies: await this.crypto.encrypt(cookies),
       expiresAt: new Date(expiresAt),
     });
 
@@ -105,7 +107,7 @@ export class EkycService {
       .post(
         this.UIDAI_URL + '/offline-kyc',
         this.formUrlEncoded({
-          uidno: aadhaarData.aadhaarNumber,
+          uidno: await this.crypto.decrypt(aadhaarData.aadhaarNumber),
           security_code: inputs.captcha,
           task: EkycTypes.generateOtp,
           boxchecked: 0,
@@ -113,7 +115,9 @@ export class EkycService {
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            Cookie: aadhaarData.cookies.join('; '),
+            Cookie: (await this.crypto.decrypt(aadhaarData.cookies))
+              .split(',')
+              .join('; '),
           },
         },
       )
@@ -159,7 +163,9 @@ export class EkycService {
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            Cookie: aadhaarData.cookies.join('; '),
+            Cookie: (await this.crypto.decrypt(aadhaarData.cookies))
+              .split(',')
+              .join('; '),
           },
           decompress: false,
           responseType: 'arraybuffer',
@@ -185,7 +191,7 @@ export class EkycService {
 
     const userData = {
       isAadhaarVerified: true,
-      aadhaarNumber: aadhaarData.aadhaarNumber,
+      aadhaarNumber: await this.crypto.decrypt(aadhaarData.aadhaarNumber),
       name: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.name,
       gender: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.gender,
       dob: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.dob,

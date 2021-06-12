@@ -6,13 +6,13 @@ export type EkycDocument = Ekyc & Document;
 @Schema()
 export class Ekyc {
   @Prop({ required: true })
-  aadhaarNumber: number;
+  aadhaarNumber: string;
 
   @Prop({ required: true, unique: true })
   transactionId: string;
 
-  @Prop([String])
-  cookies: string[];
+  @Prop()
+  cookies: string;
 
   @Prop({ required: true })
   expiresAt: Date;
