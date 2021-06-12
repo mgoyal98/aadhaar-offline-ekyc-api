@@ -2,6 +2,7 @@ import { ApiController, Request, Response } from '@libs/core';
 import { Controller, Post, Req, Res } from '@nestjs/common';
 import { EkycService } from '../services';
 import { EkycCaptchaTransformer, EkycOtpTransformer } from '@app/transformer';
+import { EkycDataTransformer } from '@app/transformer/ekyc/data';
 
 @Controller('ekyc')
 export class EkycController extends ApiController {
@@ -14,9 +15,9 @@ export class EkycController extends ApiController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<Response> {
-    const user = await this.ekyc.generateCaptcha(req.all());
+    const captcha = await this.ekyc.generateCaptcha(req.all());
     return res.success(
-      await this.transform(user, new EkycCaptchaTransformer(), { req }),
+      await this.transform(captcha, new EkycCaptchaTransformer(), { req }),
     );
   }
 
@@ -25,9 +26,20 @@ export class EkycController extends ApiController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<Response> {
-    const user = await this.ekyc.generateOtp(req.all());
+    const otp = await this.ekyc.generateOtp(req.all());
     return res.success(
-      await this.transform(user, new EkycOtpTransformer(), { req }),
+      await this.transform(otp, new EkycOtpTransformer(), { req }),
+    );
+  }
+
+  @Post('/data')
+  async verifyOtp(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<Response> {
+    const aadhaarData = await this.ekyc.verifyOtp(req.all());
+    return res.success(
+      await this.transform(aadhaarData, new EkycDataTransformer(), { req }),
     );
   }
 }

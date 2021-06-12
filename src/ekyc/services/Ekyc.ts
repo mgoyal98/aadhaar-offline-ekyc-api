@@ -1,13 +1,22 @@
 import { EkycCaptchaValidator, EkycValidator } from '@app/validators';
 import { uuid, ValidationFailed } from '@libs/core';
 import { BaseValidator } from '@libs/core/validator';
-import { Injectable, HttpService, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpService,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ekyc, EkycDocument } from '../schemas';
 import { EkycTypes } from '@app/constants';
+import { EkycOtpValidator } from '@app/validators/ekyc/Ekycotp';
 import * as cheerio from 'cheerio';
+import * as unzipper from 'unzipper';
+import * as xmlToJson from 'xml-js';
+import * as fs from 'fs/promises';
 @Injectable()
 export class EkycService {
   constructor(
@@ -55,7 +64,7 @@ export class EkycService {
     const transactionId = uuid().toString().replaceAll('-', '');
 
     const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10); // timestamp
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.ekyc.create({
       aadhaarNumber: inputs.aadhaarNumber,
@@ -63,6 +72,13 @@ export class EkycService {
       cookies: cookies,
       expiresAt: new Date(expiresAt),
     });
+
+    await fs.writeFile(
+      'captchaImage.html',
+      '<html><body><img src="data:image/jpeg;base64,' +
+        captchaImage +
+        '"/></body></html>',
+    );
 
     const captchaResponse = {
       transactionId: transactionId,
@@ -103,8 +119,6 @@ export class EkycService {
       )
       .toPromise();
     const $ = cheerio.load(otpUidaiResponse.data);
-    console.log($('div#system-message').html());
-    console.log($('div.alert').html());
     const responseData = {
       isError: $('div.alert').hasClass('alert-error'),
       message: $('.alert .alert-message').text(),
@@ -118,5 +132,67 @@ export class EkycService {
       transactionId: inputs.transactionId,
       message: responseData.message,
     };
+  }
+
+  /*======================
+        Verify OTP
+  ======================*/
+  async verifyOtp(inputs: Record<string, any>): Promise<Record<string, any>> {
+    await this.validator.fire(inputs, EkycOtpValidator);
+
+    const aadhaarData = await this.ekyc.findOne({
+      transactionId: inputs.transactionId,
+    });
+
+    if (!aadhaarData)
+      throw new UnauthorizedException('Unauthorized Transaction Id');
+
+    const otpUidaiResponse = await this.http
+      .post(
+        this.UIDAI_URL + '/offline-kyc',
+        this.formUrlEncoded({
+          totp: inputs.otp,
+          zipcode: inputs.shareCode,
+          task: EkycTypes.validateOtp,
+          boxchecked: 0,
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Cookie: aadhaarData.cookies.join('; '),
+          },
+          decompress: false,
+          responseType: 'arraybuffer',
+        },
+      )
+      .toPromise();
+
+    if (
+      otpUidaiResponse.headers['content-type'] === 'text/html; charset=UTF-8'
+    ) {
+      const $ = cheerio.load(otpUidaiResponse.data);
+      const message = $('.alert .alert-message').text();
+      if (message) throw new BadRequestException(message);
+    }
+
+    const aadhaarZip = await unzipper.Open.buffer(otpUidaiResponse.data);
+
+    const aadhaarXml = await aadhaarZip.files[0].buffer(inputs.shareCode);
+
+    const aadhaarJson = JSON.parse(
+      xmlToJson.xml2json(aadhaarXml.toString(), { compact: true, spaces: 4 }),
+    );
+
+    const userData = {
+      isAadhaarVerified: true,
+      aadhaarNumber: aadhaarData.aadhaarNumber,
+      name: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.name,
+      gender: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.gender,
+      dob: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.dob,
+      addressDetails: aadhaarJson.OfflinePaperlessKyc.UidData.Poa._attributes,
+      image: aadhaarJson.OfflinePaperlessKyc.UidData.Pht._text,
+    };
+
+    return userData;
   }
 }

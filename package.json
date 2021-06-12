@@ -64,7 +64,9 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
-    "uuid": "^8.3.2"
+    "unzipper": "^0.10.11",
+    "uuid": "^8.3.2",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.4",
@@ -74,6 +76,7 @@
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.27",
     "@types/supertest": "^2.0.8",
+    "@types/unzipper": "^0.10.3",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "eslint-config-prettier": "^7.2.0",
