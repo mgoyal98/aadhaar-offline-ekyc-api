@@ -33,6 +33,9 @@ export class EkycService {
   ) {}
 
   UIDAI_URL = this.config.get('uidai.baseUrl');
+  UIDAI_CAPTCHA_URL =
+    this.UIDAI_URL +
+    '/CaptchaSecurityImages.php?width=100&height=40&characters=5';
 
   /*======================
       Generate Captcha
@@ -43,13 +46,9 @@ export class EkycService {
     await this.validator.fire(inputs, EkycValidator);
 
     const captchaUidaiResponse = await this.http
-      .get(
-        this.UIDAI_URL +
-          '/CaptchaSecurityImages.php?width=100&height=40&characters=5',
-        {
-          responseType: 'arraybuffer',
-        },
-      )
+      .get(this.UIDAI_CAPTCHA_URL, {
+        responseType: 'arraybuffer',
+      })
       .toPromise();
 
     const captchaImage = Buffer.from(
@@ -71,6 +70,7 @@ export class EkycService {
       expiresAt: this.addMinutesInDate(new Date(), 10),
     });
 
+    // Saving base64 captcha image to html to view it easily (ONLY IN LOCAL ENV)
     if (this.config.get('app').env === 'local') {
       await fs.writeFile(
         'captchaImage.html',
@@ -109,18 +109,14 @@ export class EkycService {
     }
 
     const captchaUidaiResponse = await this.http
-      .get(
-        this.UIDAI_URL +
-          '/CaptchaSecurityImages.php?width=100&height=40&characters=5',
-        {
-          responseType: 'arraybuffer',
-          headers: {
-            Cookie: (await this.crypto.decrypt(aadhaarData.cookies))
-              .split(',')
-              .join('; '),
-          },
+      .get(this.UIDAI_CAPTCHA_URL, {
+        responseType: 'arraybuffer',
+        headers: {
+          Cookie: (await this.crypto.decrypt(aadhaarData.cookies))
+            .split(',')
+            .join('; '),
         },
-      )
+      })
       .toPromise();
 
     const captchaImage = Buffer.from(
@@ -128,6 +124,7 @@ export class EkycService {
       'binary',
     ).toString('base64');
 
+    // Saving base64 captcha image to html to view it easily (ONLY IN LOCAL ENV)
     if (this.config.get('app').env === 'local') {
       await fs.writeFile(
         'captchaImage.html',
