@@ -80,12 +80,14 @@ export class EkycService {
       expiresAt: new Date(expiresAt),
     });
 
-    await fs.writeFile(
-      'captchaImage.html',
-      '<html><body><img src="data:image/jpeg;base64,' +
-        captchaImage +
-        '"/></body></html>',
-    );
+    if (this.config.get('app').env === 'local') {
+      await fs.writeFile(
+        'captchaImage.html',
+        '<html><body><img src="data:image/jpeg;base64,' +
+          captchaImage +
+          '"/></body></html>',
+      );
+    }
 
     const captchaResponse = {
       sessionId: sessionId,
@@ -129,12 +131,14 @@ export class EkycService {
       'binary',
     ).toString('base64');
 
-    await fs.writeFile(
-      'captchaImage.html',
-      '<html><body><img src="data:image/jpeg;base64,' +
-        captchaImage +
-        '"/></body></html>',
-    );
+    if (this.config.get('app').env === 'local') {
+      await fs.writeFile(
+        'captchaImage.html',
+        '<html><body><img src="data:image/jpeg;base64,' +
+          captchaImage +
+          '"/></body></html>',
+      );
+    }
 
     const captchaResponse = {
       sessionId: inputs.sessionId,
