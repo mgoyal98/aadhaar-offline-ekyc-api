@@ -67,6 +67,7 @@ export class EkycService {
       sessionId: sessionId,
       shareCode: await this.crypto.randomBytesHex(4),
       cookies: await this.crypto.encrypt(cookies),
+      isConsent: inputs.isConsent,
       createdAt: new Date(),
     });
 
@@ -232,6 +233,11 @@ export class EkycService {
 
     const aadhaarJson = JSON.parse(
       xmlToJson.xml2json(aadhaarXml.toString(), { compact: true, spaces: 4 }),
+    );
+
+    await this.ekyc.updateOne(
+      { sessionId: inputs.sessionId },
+      { isFlowCompleted: true },
     );
 
     const userData = {

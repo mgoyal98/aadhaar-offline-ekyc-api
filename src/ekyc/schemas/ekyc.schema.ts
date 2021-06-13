@@ -17,6 +17,12 @@ export class Ekyc {
   @Prop()
   cookies: string;
 
+  @Prop({ required: true, default: false })
+  isConsent: boolean;
+
+  @Prop({ required: true, default: false })
+  isFlowCompleted: boolean;
+
   @Prop({ required: true })
   createdAt: Date;
 }
