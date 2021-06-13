@@ -34,12 +34,6 @@ export class EkycService {
 
   UIDAI_URL = this.config.get('uidai.baseUrl');
 
-  formUrlEncoded = (data: Record<string, any>) =>
-    Object.keys(data).reduce(
-      (p, c) => p + `&${c}=${encodeURIComponent(data[c])}`,
-      '',
-    );
-
   /*======================
       Generate Captcha
   ======================*/
@@ -69,15 +63,12 @@ export class EkycService {
     );
     const sessionId = uuid().toString().replaceAll('-', '');
 
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
-
     await this.ekyc.create({
       aadhaarNumber: await this.crypto.encrypt(inputs.aadhaarNumber),
       sessionId: sessionId,
       cookies: await this.crypto.encrypt(cookies),
       createdAt: new Date(),
-      expiresAt: new Date(expiresAt),
+      expiresAt: this.addMinutesInDate(new Date(), 10),
     });
 
     if (this.config.get('app').env === 'local') {
@@ -110,6 +101,12 @@ export class EkycService {
     });
 
     if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
+
+    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
+      throw new BadRequestException(
+        'Verification session expired. Please try again from start.',
+      );
+    }
 
     const captchaUidaiResponse = await this.http
       .get(
@@ -160,6 +157,12 @@ export class EkycService {
 
     if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
 
+    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
+      throw new BadRequestException(
+        'Verification session expired. Please try again from start.',
+      );
+    }
+
     const otpUidaiResponse = await this.http
       .post(
         this.UIDAI_URL + '/offline-kyc',
@@ -207,6 +210,12 @@ export class EkycService {
 
     if (!aadhaarData)
       throw new UnauthorizedException('Unauthorized Session Id');
+
+    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
+      throw new BadRequestException(
+        'Verification session expired. Please try again from start.',
+      );
+    }
 
     const otpUidaiResponse = await this.http
       .post(
@@ -257,5 +266,17 @@ export class EkycService {
     };
 
     return userData;
+  }
+
+  formUrlEncoded = (data: Record<string, any>) =>
+    Object.keys(data).reduce(
+      (p, c) => p + `&${c}=${encodeURIComponent(data[c])}`,
+      '',
+    );
+
+  addMinutesInDate(date: Date, minutes: number): Date {
+    const newDate = date;
+    newDate.setMinutes(newDate.getMinutes() + minutes);
+    return newDate;
   }
 }
