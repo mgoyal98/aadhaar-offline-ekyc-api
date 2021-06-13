@@ -7,6 +7,7 @@ import config from '@config/index';
 import { CoreModule } from '@libs/core';
 import { ConsoleModule } from '@squareboat/nest-console';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get('db'),
     }),
+    ScheduleModule.forRoot(),
   ],
   controllers: [],
   providers: [],
