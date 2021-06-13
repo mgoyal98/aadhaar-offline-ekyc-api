@@ -261,6 +261,7 @@ export class EkycService {
     const userData = {
       isAadhaarVerified: true,
       aadhaarNumber: await this.crypto.decrypt(aadhaarData.aadhaarNumber),
+      sessionId: inputs.sessionId,
       mobileHash: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.m,
       emailHash: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.e,
       name: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.name,
