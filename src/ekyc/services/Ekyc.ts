@@ -3,6 +3,7 @@ import {
   EkycValidator,
   EkycOtpValidator,
   EkycRefreshCaptchaValidator,
+  EkycValidateDataValidator,
 } from '@app/validators';
 import { uuid, ValidationFailed } from '@libs/core';
 import { BaseValidator } from '@libs/core/validator';
@@ -255,6 +256,51 @@ export class EkycService {
     };
 
     return userData;
+  }
+
+  /*======================
+       Validate Data
+  ======================*/
+  async validateData(
+    inputs: Record<string, any>,
+  ): Promise<Record<string, any>> {
+    await this.validator.fire(inputs, EkycValidateDataValidator);
+
+    const aadhaarData = await this.ekyc.findOne({
+      sessionId: inputs.sessionId,
+    });
+
+    if (!aadhaarData)
+      throw new UnauthorizedException('Unauthorized Session Id');
+
+    const aadhaarNumber = await this.crypto.decrypt(aadhaarData.aadhaarNumber);
+
+    const numberOfHashs =
+      Number(aadhaarNumber[aadhaarNumber.length - 1]) > 1
+        ? Number(aadhaarNumber[aadhaarNumber.length - 1])
+        : 1;
+
+    let systemHash =
+      (inputs.mobileNumber || inputs.email) + aadhaarData.shareCode;
+
+    for (let i = 0; i < numberOfHashs; i++) {
+      systemHash = await this.crypto.hashSha256(systemHash);
+    }
+
+    if (systemHash !== inputs.hash) {
+      throw new BadRequestException(
+        inputs.type.charAt(0).toUpperCase() +
+          inputs.type.slice(1).toLowerCase() +
+          ' is not valid',
+      );
+    }
+
+    await this.ekyc.updateOne(
+      { sessionId: inputs.sessionId },
+      { isVerified: true },
+    );
+
+    return { isVerified: true, verificationType: inputs.type };
   }
 
   formUrlEncoded = (data: Record<string, any>) =>

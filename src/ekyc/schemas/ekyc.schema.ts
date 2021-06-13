@@ -23,6 +23,9 @@ export class Ekyc {
   @Prop({ required: true, default: false })
   isFlowCompleted: boolean;
 
+  @Prop({ required: true, default: false })
+  isVerified: boolean;
+
   @Prop({ required: true })
   createdAt: Date;
 }

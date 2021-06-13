@@ -7,7 +7,7 @@ import {
 } from 'class-validator';
 
 @ValidatorConstraint({ async: true })
-class IsBooleanEqualTo implements ValidatorConstraintInterface {
+class IsBooleanEqualToConstrain implements ValidatorConstraintInterface {
   async validate(value: boolean, args: ValidationArguments) {
     const [requiredBoolean] = args.constraints;
     return value === requiredBoolean;
@@ -20,7 +20,7 @@ class IsBooleanEqualTo implements ValidatorConstraintInterface {
   }
 }
 
-export function IsBooleanEqualToProp(
+export function IsBooleanEqualTo(
   property: boolean,
   validationOptions?: ValidationOptions,
 ) {
@@ -30,7 +30,7 @@ export function IsBooleanEqualToProp(
       propertyName: propertyName,
       options: validationOptions,
       constraints: [property],
-      validator: IsBooleanEqualTo,
+      validator: IsBooleanEqualToConstrain,
     });
   };
 }

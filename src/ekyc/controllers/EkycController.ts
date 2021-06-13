@@ -53,4 +53,13 @@ export class EkycController extends ApiController {
       await this.transform(aadhaarData, new EkycDataTransformer(), { req }),
     );
   }
+
+  @Post('/validate')
+  async validateDate(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<Response> {
+    const aadhaarData = await this.ekyc.validateData(req.all());
+    return res.success(aadhaarData);
+  }
 }

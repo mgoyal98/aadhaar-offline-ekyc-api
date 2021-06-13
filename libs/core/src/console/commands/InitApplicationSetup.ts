@@ -37,7 +37,6 @@ export class InitApplicationSetup {
 
     for (const command of commands) {
       _cli.info(`✅ ${command.title}`, 'white');
-      console.log(command.cmd)
       exec(command.cmd);
     }
 
