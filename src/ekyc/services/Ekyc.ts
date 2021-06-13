@@ -68,7 +68,6 @@ export class EkycService {
       shareCode: await this.crypto.randomBytesHex(4),
       cookies: await this.crypto.encrypt(cookies),
       createdAt: new Date(),
-      expiresAt: this.addMinutesInDate(new Date(), 10),
     });
 
     // Saving base64 captcha image to html to view it easily (ONLY IN LOCAL ENV)
