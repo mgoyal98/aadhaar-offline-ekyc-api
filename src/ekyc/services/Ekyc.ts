@@ -17,7 +17,6 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ekyc, EkycDocument } from '../schemas';
 import { EkycTypes } from '@app/constants';
-import { Cron } from '@nestjs/schedule';
 import { CryptoService } from '@app/helper-services';
 import * as cheerio from 'cheerio';
 import * as unzipper from 'unzipper';
@@ -37,11 +36,6 @@ export class EkycService {
   UIDAI_CAPTCHA_URL =
     this.UIDAI_URL +
     '/CaptchaSecurityImages.php?width=100&height=40&characters=5';
-
-  @Cron('*/30 * * * * *')
-  async deleteExpiredSessions() {
-    await this.ekyc.deleteMany({ expiresAt: { $lt: new Date() } });
-  }
 
   /*======================
       Generate Captcha
@@ -108,12 +102,6 @@ export class EkycService {
 
     if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
 
-    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
-      throw new BadRequestException(
-        'Verification session expired. Please try again from start.',
-      );
-    }
-
     const captchaUidaiResponse = await this.http
       .get(this.UIDAI_CAPTCHA_URL, {
         responseType: 'arraybuffer',
@@ -159,12 +147,6 @@ export class EkycService {
     });
 
     if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
-
-    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
-      throw new BadRequestException(
-        'Verification session expired. Please try again from start.',
-      );
-    }
 
     const otpUidaiResponse = await this.http
       .post(
@@ -213,12 +195,6 @@ export class EkycService {
 
     if (!aadhaarData)
       throw new UnauthorizedException('Unauthorized Session Id');
-
-    if (this.addMinutesInDate(aadhaarData.expiresAt, 10) < new Date()) {
-      throw new BadRequestException(
-        'Verification session expired. Please try again from start.',
-      );
-    }
 
     const otpUidaiResponse = await this.http
       .post(

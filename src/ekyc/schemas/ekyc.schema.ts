@@ -16,9 +16,6 @@ export class Ekyc {
 
   @Prop({ required: true })
   createdAt: Date;
-
-  @Prop({ required: true })
-  expiresAt: Date;
 }
 
 export const EkycSchema = SchemaFactory.createForClass(Ekyc);
