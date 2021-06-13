@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createCipheriv, randomBytes, scrypt, createDecipheriv } from 'crypto';
-import { promisify } from 'util';
+import { createCipheriv, randomBytes, createDecipheriv } from 'crypto';
 
 @Injectable()
 export class CryptoService {
@@ -23,7 +22,7 @@ export class CryptoService {
     ]).toString('hex');
   }
 
-  async decrypt(encryptedText: any) {
+  async decrypt(encryptedText: string) {
     const decipher = createDecipheriv(
       'aes-256-ctr',
       Buffer.from(this.key, 'hex'),
@@ -33,5 +32,9 @@ export class CryptoService {
       decipher.update(Buffer.from(encryptedText, 'hex')),
       decipher.final(),
     ]).toString();
+  }
+
+  async randomBytesHex(n: number) {
+    return randomBytes(n).toString('hex');
   }
 }

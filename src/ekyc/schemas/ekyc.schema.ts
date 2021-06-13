@@ -11,6 +11,9 @@ export class Ekyc {
   @Prop({ required: true, unique: true })
   sessionId: string;
 
+  @Prop({ required: true })
+  shareCode: string;
+
   @Prop()
   cookies: string;
 

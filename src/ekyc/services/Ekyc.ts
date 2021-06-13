@@ -65,6 +65,7 @@ export class EkycService {
     await this.ekyc.create({
       aadhaarNumber: await this.crypto.encrypt(inputs.aadhaarNumber),
       sessionId: sessionId,
+      shareCode: await this.crypto.randomBytesHex(4),
       cookies: await this.crypto.encrypt(cookies),
       createdAt: new Date(),
       expiresAt: this.addMinutesInDate(new Date(), 10),
@@ -201,7 +202,7 @@ export class EkycService {
         this.UIDAI_URL + '/offline-kyc',
         this.formUrlEncoded({
           totp: inputs.otp,
-          zipcode: inputs.shareCode,
+          zipcode: aadhaarData.shareCode,
           task: EkycTypes.validateOtp,
           boxchecked: 0,
         }),
@@ -228,7 +229,7 @@ export class EkycService {
 
     const aadhaarZip = await unzipper.Open.buffer(otpUidaiResponse.data);
 
-    const aadhaarXml = await aadhaarZip.files[0].buffer(inputs.shareCode);
+    const aadhaarXml = await aadhaarZip.files[0].buffer(aadhaarData.shareCode);
 
     const aadhaarJson = JSON.parse(
       xmlToJson.xml2json(aadhaarXml.toString(), { compact: true, spaces: 4 }),
@@ -238,6 +239,7 @@ export class EkycService {
       isAadhaarVerified: true,
       aadhaarNumber: await this.crypto.decrypt(aadhaarData.aadhaarNumber),
       sessionId: inputs.sessionId,
+      shareCode: aadhaarData.shareCode,
       mobileHash: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.m,
       emailHash: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.e,
       name: aadhaarJson.OfflinePaperlessKyc.UidData.Poi._attributes.name,

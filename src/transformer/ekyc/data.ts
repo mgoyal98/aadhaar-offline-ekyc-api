@@ -9,6 +9,7 @@ export class EkycDataTransformer extends Transformer {
       isAadhaarVerified: data.isAadhaarVerified,
       aadhaarNumber: data.aadhaarNumber,
       sessionId: data.sessionId,
+      shareCode: data.shareCode,
       mobileHash: data.mobileHash,
       emailHash: data.emailHash,
       name: data.name,

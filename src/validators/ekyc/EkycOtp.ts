@@ -5,10 +5,6 @@ export class EkycOtpValidator {
   @LengthEqualTo(32, { message: 'Invalid Session ID' })
   sessionId: string;
 
-  @IsNumber({}, { message: 'Invalid Sharecode' })
-  @LengthEqualTo(4, { message: 'Sharecode should be of 4 digits' })
-  shareCode: number;
-
   @IsNumber({}, { message: 'Invalid OTP' })
   @LengthEqualTo(6, { message: 'OTP should be of 6 digits' })
   otp: number;
