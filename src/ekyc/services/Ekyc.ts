@@ -2,6 +2,7 @@ import {
   EkycCaptchaValidator,
   EkycValidator,
   EkycOtpValidator,
+  EkycRefreshCaptchaValidator,
 } from '@app/validators';
 import { uuid, ValidationFailed } from '@libs/core';
 import { BaseValidator } from '@libs/core/validator';
@@ -88,6 +89,55 @@ export class EkycService {
 
     const captchaResponse = {
       sessionId: sessionId,
+      captcha: captchaImage,
+    };
+
+    return captchaResponse;
+  }
+
+  /*======================
+      Refresh Captcha
+  ======================*/
+  async refreshCaptcha(
+    inputs: Record<string, any>,
+  ): Promise<Record<string, any>> {
+    await this.validator.fire(inputs, EkycRefreshCaptchaValidator);
+
+    const aadhaarData = await this.ekyc.findOne({
+      sessionId: inputs.sessionId,
+    });
+
+    if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
+
+    const captchaUidaiResponse = await this.http
+      .get(
+        this.UIDAI_URL +
+          '/CaptchaSecurityImages.php?width=100&height=40&characters=5',
+        {
+          responseType: 'arraybuffer',
+          headers: {
+            Cookie: (await this.crypto.decrypt(aadhaarData.cookies))
+              .split(',')
+              .join('; '),
+          },
+        },
+      )
+      .toPromise();
+
+    const captchaImage = Buffer.from(
+      captchaUidaiResponse.data,
+      'binary',
+    ).toString('base64');
+
+    await fs.writeFile(
+      'captchaImage.html',
+      '<html><body><img src="data:image/jpeg;base64,' +
+        captchaImage +
+        '"/></body></html>',
+    );
+
+    const captchaResponse = {
+      sessionId: inputs.sessionId,
       captcha: captchaImage,
     };
 

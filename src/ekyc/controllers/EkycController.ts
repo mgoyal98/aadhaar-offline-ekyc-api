@@ -21,6 +21,17 @@ export class EkycController extends ApiController {
     );
   }
 
+  @Post('/captcha/refresh')
+  async refreshCaptcha(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<Response> {
+    const captcha = await this.ekyc.refreshCaptcha(req.all());
+    return res.success(
+      await this.transform(captcha, new EkycCaptchaTransformer(), { req }),
+    );
+  }
+
   @Post('/otp')
   async generateOtp(
     @Req() req: Request,
