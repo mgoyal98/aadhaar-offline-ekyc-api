@@ -14,7 +14,7 @@ export class CryptoService {
   key = this.config.get('crypto').key;
   iv = this.config.get('crypto').iv;
 
-  async encrypt(textToEncrypt: any): Promise<string> {
+  async encrypt(textToEncrypt: string): Promise<string> {
     const cipher = createCipheriv(
       'aes-256-ctr',
       Buffer.from(this.key, 'hex'),

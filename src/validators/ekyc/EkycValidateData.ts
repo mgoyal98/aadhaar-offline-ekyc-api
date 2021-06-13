@@ -4,7 +4,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsString,
   ValidateIf,
 } from '@libs/core/validator';
 import { LengthEqualTo } from '../decorators';

@@ -303,7 +303,7 @@ export class EkycService {
     return { isVerified: true, verificationType: inputs.type };
   }
 
-  formUrlEncoded = (data: Record<string, any>) =>
+  formUrlEncoded = (data: Record<string, any>): string =>
     Object.keys(data).reduce(
       (p, c) => p + `&${c}=${encodeURIComponent(data[c])}`,
       '',
