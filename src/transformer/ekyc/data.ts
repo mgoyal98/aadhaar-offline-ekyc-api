@@ -8,6 +8,8 @@ export class EkycDataTransformer extends Transformer {
     return {
       isAadhaarVerified: data.isAadhaarVerified,
       aadhaarNumber: data.aadhaarNumber,
+      mobileHash: data.mobileHash,
+      emailHash: data.emailHash,
       name: data.name,
       gender: data.gender,
       dob: data.dob,
