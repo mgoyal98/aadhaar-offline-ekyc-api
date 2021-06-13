@@ -6,7 +6,7 @@ export class EkycOtpTransformer extends Transformer {
 
   async transform(otp: Record<string, any>): Promise<Record<string, any>> {
     return {
-      transactionId: otp.transactionId,
+      sessionId: otp.sessionId,
       message: otp.message,
     };
   }

@@ -6,7 +6,7 @@ export class EkycCaptchaTransformer extends Transformer {
 
   async transform(captcha: Record<string, any>): Promise<Record<string, any>> {
     return {
-      transactionId: captcha.transactionId,
+      sessionId: captcha.sessionId,
       captcha: captcha.captcha,
     };
   }

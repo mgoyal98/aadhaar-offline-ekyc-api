@@ -9,10 +9,13 @@ export class Ekyc {
   aadhaarNumber: string;
 
   @Prop({ required: true, unique: true })
-  transactionId: string;
+  sessionId: string;
 
   @Prop()
   cookies: string;
+
+  @Prop({ required: true })
+  createdAt: Date;
 
   @Prop({ required: true })
   expiresAt: Date;

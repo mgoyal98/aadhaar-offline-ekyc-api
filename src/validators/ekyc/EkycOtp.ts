@@ -2,8 +2,8 @@ import { IsNumber } from '@libs/core/validator';
 import { LengthEqualTo } from '../decorators';
 
 export class EkycOtpValidator {
-  @LengthEqualTo(32, { message: 'Invalid Transaction ID' })
-  transactionId: string;
+  @LengthEqualTo(32, { message: 'Invalid Session ID' })
+  sessionId: string;
 
   @IsNumber({}, { message: 'Invalid Sharecode' })
   @LengthEqualTo(4, { message: 'Sharecode should be of 4 digits' })

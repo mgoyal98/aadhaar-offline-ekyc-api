@@ -1,4 +1,8 @@
-import { EkycCaptchaValidator, EkycValidator } from '@app/validators';
+import {
+  EkycCaptchaValidator,
+  EkycValidator,
+  EkycOtpValidator,
+} from '@app/validators';
 import { uuid, ValidationFailed } from '@libs/core';
 import { BaseValidator } from '@libs/core/validator';
 import {
@@ -12,7 +16,6 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Ekyc, EkycDocument } from '../schemas';
 import { EkycTypes } from '@app/constants';
-import { EkycOtpValidator } from '@app/validators/ekyc/Ekycotp';
 import * as cheerio from 'cheerio';
 import * as unzipper from 'unzipper';
 import * as xmlToJson from 'xml-js';
@@ -63,15 +66,16 @@ export class EkycService {
         return cookie.split(';')[0];
       },
     );
-    const transactionId = uuid().toString().replaceAll('-', '');
+    const sessionId = uuid().toString().replaceAll('-', '');
 
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 10);
 
     await this.ekyc.create({
       aadhaarNumber: await this.crypto.encrypt(inputs.aadhaarNumber),
-      transactionId: transactionId,
+      sessionId: sessionId,
       cookies: await this.crypto.encrypt(cookies),
+      createdAt: new Date(),
       expiresAt: new Date(expiresAt),
     });
 
@@ -83,7 +87,7 @@ export class EkycService {
     );
 
     const captchaResponse = {
-      transactionId: transactionId,
+      sessionId: sessionId,
       captcha: captchaImage,
     };
 
@@ -97,11 +101,10 @@ export class EkycService {
     await this.validator.fire(inputs, EkycCaptchaValidator);
 
     const aadhaarData = await this.ekyc.findOne({
-      transactionId: inputs.transactionId,
+      sessionId: inputs.sessionId,
     });
 
-    if (!aadhaarData)
-      throw new UnauthorizedException('Unauthorized Transaction Id');
+    if (!aadhaarData) throw new UnauthorizedException('Invalid Session Id');
 
     const otpUidaiResponse = await this.http
       .post(
@@ -133,7 +136,7 @@ export class EkycService {
     }
 
     return {
-      transactionId: inputs.transactionId,
+      sessionId: inputs.sessionId,
       message: responseData.message,
     };
   }
@@ -145,11 +148,11 @@ export class EkycService {
     await this.validator.fire(inputs, EkycOtpValidator);
 
     const aadhaarData = await this.ekyc.findOne({
-      transactionId: inputs.transactionId,
+      sessionId: inputs.sessionId,
     });
 
     if (!aadhaarData)
-      throw new UnauthorizedException('Unauthorized Transaction Id');
+      throw new UnauthorizedException('Unauthorized Session Id');
 
     const otpUidaiResponse = await this.http
       .post(
